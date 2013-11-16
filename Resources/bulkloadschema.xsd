@@ -1,0 +1,382 @@
+<?xml version="1.0"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:bl="http://schemas.microsoft.com/sqlserver/2004/bulkload/format" targetNamespace="http://schemas.microsoft.com/sqlserver/2004/bulkload/format" elementFormDefault="qualified" attributeFormDefault="unqualified">
+    <xsd:annotation>
+        <xsd:documentation>
+Microsoft does not make any representation or warranty regarding the 
+schema or any product or item developed based on the schema. The schema 
+is provided to you on an AS IS basis.  Microsoft disclaims all express, 
+implied and statutory warranties, including but not limited to the implied 
+warranties of merchantability, fitness for a particular purpose, and freedom 
+from infringement. Without limiting the generality of the foregoing, 
+Microsoft does not make any warranty of any kind that any item developed 
+based on the schema, or any portion of the schema, will not infringe any 
+copyright, patent, trade secret, or other intellectual property right of any 
+person or entity in any country. It is your responsibility to seek licenses 
+for such intellectual property rights where appropriate.
+ 
+MICROSOFT SHALL NOT BE LIABLE FOR ANY DAMAGES OF ANY KIND ARISING OUT OF OR 
+IN CONNECTION WITH THE USE OF THE SCHEMA, INCLUDING WITHOUT LIMITATION, ANY 
+DIRECT, INDIRECT, INCIDENTAL, CONSEQUENTIAL (INCLUDING ANY LOST PROFITS), 
+PUNITIVE OR SPECIAL DAMAGES, WHETHER OR NOT MICROSOFT HAS BEEN ADVISED OF 
+SUCH DAMAGES. 
+
+(c) Microsoft Corporation. All rights reserved.
+        </xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:element name="BCPFORMAT" type="bl:bcpFormatType">
+        <xsd:key name="uniqueFieldID">
+            <xsd:selector xpath="bl:RECORD/bl:FIELD"/>
+            <xsd:field xpath="@ID"/>
+        </xsd:key>
+    </xsd:element>
+    <xsd:complexType name="bcpFormatType">
+        <xsd:sequence>
+            <xsd:element name="RECORD" type="bl:recordType">
+            </xsd:element>
+            <xsd:element name="ROW" type="bl:rowType">
+                <xsd:unique name="oneColumnForEachField">
+                    <xsd:selector xpath="bl:COLUMN"/>
+                    <xsd:field xpath="@SOURCE"/>
+                </xsd:unique>
+                <xsd:unique name="uniqueColumnName">
+                    <xsd:selector xpath="bl:COLUMN"/>
+                    <xsd:field xpath="@NAME"/>
+                </xsd:unique>
+                <xsd:keyref name="columnReferencesField" refer="bl:uniqueFieldID">
+                    <xsd:selector xpath="bl:COLUMN"/>
+                    <xsd:field xpath="@SOURCE"/>
+                </xsd:keyref>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="recordType">
+        <xsd:sequence>
+            <xsd:element name="FIELD" type="bl:AnyFieldType" maxOccurs="4096"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:simpleType name="prefixLength">
+        <xsd:restriction base="xsd:positiveInteger">
+            <xsd:enumeration value="1"/>
+            <xsd:enumeration value="2"/>
+            <xsd:enumeration value="4"/>
+            <xsd:enumeration value="8"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:complexType name="AnyFieldType" abstract="true">
+        <xsd:attribute name="ID" type="xsd:NCName" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="NativeFixed">
+        <xsd:complexContent>
+            <xsd:extension base="bl:AnyFieldType">
+                <xsd:attribute name="LENGTH" type="xsd:positiveInteger" use="required"/>
+            </xsd:extension >
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="NativePrefix">
+        <xsd:complexContent>
+            <xsd:extension base="bl:AnyFieldType">
+                <xsd:attribute name="PREFIX_LENGTH" type="bl:prefixLength" use="required"/>
+		        <xsd:attribute name="MAX_LENGTH" type="xsd:positiveInteger" use="optional"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="CharFixed">
+        <xsd:complexContent>
+            <xsd:extension base="bl:NativeFixed">
+                <xsd:attribute name="COLLATION" type="xsd:string" use="optional"/>
+            </xsd:extension >
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="NCharFixed">
+        <xsd:complexContent>
+            <xsd:extension base="bl:CharFixed"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="CharPrefix">
+        <xsd:complexContent>
+            <xsd:extension base="bl:NativePrefix">
+                <xsd:attribute name="COLLATION" type="xsd:string" use="optional"/>
+            </xsd:extension >
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="NCharPrefix">
+        <xsd:complexContent>
+            <xsd:extension base="bl:CharPrefix"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="CharTerm">
+        <xsd:complexContent>
+            <xsd:extension base="bl:AnyFieldType">
+		<xsd:attribute name="TERMINATOR" type="xsd:string" use="required"/>
+                <xsd:attribute name="MAX_LENGTH" type="xsd:positiveInteger" use="optional"/>
+                <xsd:attribute name="COLLATION" type="xsd:string" use="optional"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="NCharTerm">
+        <xsd:complexContent>
+            <xsd:extension base="bl:CharTerm"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="rowType">
+        <xsd:sequence minOccurs="1">
+            <xsd:element name="COLUMN" type="bl:AnyColumnType" maxOccurs="4096" minOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="AnyColumnType">
+        <xsd:attribute name="SOURCE" type="xsd:NCName" use="required"/>
+        <xsd:attribute name="NAME" type="xsd:NCName" use="optional"/>
+        <xsd:attribute name="NULLABLE" use="optional" default="YES">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="YES"/>
+                    <xsd:enumeration value="NO"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="VarDatetime" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="bl:AnyColumnType">
+                <xsd:attribute name="SCALE" type="xsd:positiveInteger" use="optional"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="Fixed" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="bl:AnyColumnType"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLBIT">
+        <xsd:complexContent>
+            <xsd:restriction base="bl:Fixed"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLTINYINT">
+        <xsd:complexContent>
+            <xsd:extension base="bl:Fixed"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLSMALLINT">
+        <xsd:complexContent>
+            <xsd:extension base="bl:Fixed"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLINT">
+        <xsd:complexContent>
+            <xsd:extension base="bl:Fixed"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLBIGINT">
+        <xsd:complexContent>
+            <xsd:extension base="bl:Fixed"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLFLT4">
+        <xsd:complexContent>
+            <xsd:extension base="bl:Fixed"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLFLT8">
+        <xsd:complexContent>
+            <xsd:extension base="bl:Fixed"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLDATETIME">
+        <xsd:complexContent>
+            <xsd:extension base="bl:Fixed"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLDATETIM4">
+        <xsd:complexContent>
+            <xsd:extension base="bl:Fixed"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLDATETIM8">
+        <xsd:complexContent>
+            <xsd:extension base="bl:Fixed"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLTIME">
+        <xsd:complexContent>
+            <xsd:extension base="bl:VarDatetime"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLDATETIME2">
+        <xsd:complexContent>
+            <xsd:extension base="bl:VarDatetime"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLDATETIMEOFFSET">
+        <xsd:complexContent>
+            <xsd:extension base="bl:VarDatetime"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLDATE">
+        <xsd:complexContent>
+            <xsd:extension base="bl:Fixed"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLMONEY">
+        <xsd:complexContent>
+            <xsd:extension base="bl:Fixed"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLMONEY4">
+        <xsd:complexContent>
+            <xsd:extension base="bl:Fixed"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLVARIANT">
+        <xsd:complexContent>
+            <xsd:extension base="bl:Fixed"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLUNIQUEID">
+        <xsd:complexContent>
+            <xsd:extension base="bl:Fixed"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="VarNumber" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="bl:AnyColumnType">
+                <xsd:attribute name="PRECISION" type="xsd:positiveInteger" use="optional"/>
+                <xsd:attribute name="SCALE" type="xsd:integer" use="optional"/>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLDECIMAL">
+        <xsd:complexContent>
+            <xsd:extension base="bl:VarNumber"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLNUMERIC">
+        <xsd:complexContent>
+            <xsd:extension base="bl:VarNumber"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="LOB" abstract="true">
+        <xsd:complexContent>
+            <xsd:restriction base="bl:AnyColumnType"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLIMAGE">
+        <xsd:complexContent>
+            <xsd:restriction base="bl:LOB"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLUDT">
+        <xsd:complexContent>
+            <xsd:restriction base="bl:LOB"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="CharLOB" abstract="true">
+        <xsd:complexContent>
+            <xsd:restriction base="bl:LOB"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLTEXT">
+        <xsd:complexContent>
+            <xsd:restriction base="bl:CharLOB"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLNTEXT">
+        <xsd:complexContent>
+            <xsd:restriction base="bl:CharLOB"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="AnyString" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension  base="bl:AnyColumnType">
+                <xsd:attribute name="LENGTH" type="xsd:positiveInteger" use="optional"/>
+            </xsd:extension >
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLBINARY">
+        <xsd:complexContent>
+            <xsd:extension  base="bl:AnyString"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLVARYBIN">
+        <xsd:complexContent>
+            <xsd:extension  base="bl:AnyString"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="CharString" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="bl:AnyString"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLCHAR">
+        <xsd:complexContent>
+            <xsd:extension base="bl:CharString"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLVARYCHAR">
+        <xsd:complexContent>
+            <xsd:extension base="bl:CharString"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLNCHAR">
+        <xsd:complexContent>
+            <xsd:extension base="bl:CharString"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="SQLNVARCHAR">
+        <xsd:complexContent>
+            <xsd:extension base="bl:CharString"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+</xsd:schema>
