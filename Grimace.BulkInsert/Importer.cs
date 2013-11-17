@@ -8,6 +8,7 @@ using System.Text;
 using Grimace.BulkInsert.Exceptions;
 using Grimace.BulkInsert.FormatFile;
 using Grimace.BulkInsert.Resources;
+using Grimace.BulkInsert.Schema;
 
 namespace Grimace.BulkInsert
 {
@@ -24,8 +25,12 @@ namespace Grimace.BulkInsert
       TableName = tableName;
       ColumnNames = columnNames;
 
-      var formatFileBuilder = new FormatFileBuilder(sqlConnection);
-      var formatXml = formatFileBuilder.CreateXml(tableName, columnNames);
+      var schemaProvider = new SchemaProvider(sqlConnection);
+      var dbColumns = schemaProvider.GetColumns(tableName);
+
+      var formatFileBuilder = new FormatFileBuilder(schemaProvider);
+      var formatXml = formatFileBuilder.GetFormatXml(dbColumns);
+
       var formatFile = Path.GetTempFileName();
       File.WriteAllText(formatFile, formatXml);
     }

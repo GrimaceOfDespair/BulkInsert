@@ -56,6 +56,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
+    <Compile Include="Schema\DbColumn.cs" />
+    <Compile Include="Schema\ISchemaProvider.cs" />
+    <Compile Include="Schema\SchemaProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Strings.resx">

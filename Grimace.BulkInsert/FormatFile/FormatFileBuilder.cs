@@ -10,22 +10,21 @@ using System.Reflection;
 using System.Text;
 using System.Xml.Serialization;
 using Grimace.BulkInsert.Resources;
+using Grimace.BulkInsert.Schema;
 
 namespace Grimace.BulkInsert.FormatFile
 {
   public class FormatFileBuilder
   {
-    public DbConnection DbConnection { get; private set; }
+    public SchemaProvider SchemaProvider { get; private set; }
 
-    public FormatFileBuilder(DbConnection dbConnection)
+    public FormatFileBuilder(SchemaProvider schemaProvider)
     {
-      DbConnection = dbConnection;
+      SchemaProvider = schemaProvider;
     }
 
-    public string CreateXml(string tableName, string[] columnNames)
+    public string GetFormatXml(IEnumerable<DbColumn> dbColumns)
     {
-      var dbColumns = GetColumns(tableName);
-
       var schema = CreateSchema(dbColumns);
 
       var serializer = new XmlSerializer(typeof (bcpFormatType));
@@ -33,43 +32,6 @@ namespace Grimace.BulkInsert.FormatFile
       serializer.Serialize(schemaWriter, schema);
 
       return schemaWriter.ToString();
-    }
-
-    public IEnumerable<DbColumn> GetColumns(string tableName)
-    {
-      using (var selectColumnsCommand = DbConnection.CreateCommand())
-      {
-        selectColumnsCommand.CommandText = string.Format(
-          "SELECT column_name, data_type, is_nullable, character_maximum_length " +
-          "FROM information_schema.COLUMNS " +
-          "WHERE table_name='{0}'",
-          tableName);
-
-        using (var columnReader = selectColumnsCommand.ExecuteReader())
-        {
-          var id = 1;
-
-          while (columnReader.Read())
-          {
-            var sqlType = (string)columnReader["data_type"] ?? "";
-
-            var maxLength = (columnReader["character_maximum_length"] as int?) ?? 0;
-            if (maxLength == 0)
-            {
-              maxLength = DbTypes.GetMaxLength(sqlType);
-            }
-
-            yield return new DbColumn
-                           {
-                             Id = id++.ToString(CultureInfo.InvariantCulture),
-                             Name = (string) columnReader["column_name"] ?? "",
-                             SqlType = sqlType,
-                             Nullable = (string) columnReader["is_nullable"] ?? "",
-                             MaxLength = maxLength
-                           };
-          }
-        }
-      }
     }
 
     public bcpFormatType CreateSchema(IEnumerable<DbColumn> colums)
@@ -119,15 +81,6 @@ namespace Grimace.BulkInsert.FormatFile
                  TERMINATOR = "\\0",
                  MAX_LENGTH = column.MaxLength.ToString(CultureInfo.InvariantCulture),
                };
-    }
-
-    public struct DbColumn
-    {
-      public string Id;
-      public string Name;
-      public string SqlType;
-      public string Nullable;
-      public int MaxLength;
     }
   }
 }
