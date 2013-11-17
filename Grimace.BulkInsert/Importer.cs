@@ -28,7 +28,6 @@ namespace Grimace.BulkInsert
       var formatXml = formatFileBuilder.CreateXml(tableName, columnNames);
       var formatFile = Path.GetTempFileName();
       File.WriteAllText(formatFile, formatXml);
-
     }
 
     public void Import(IEnumerable<string[]> dataValues)
@@ -50,7 +49,7 @@ namespace Grimace.BulkInsert
     private void ExecuteInsert(string namedPipePath)
     {
       var insertCommand = DbConnection.CreateCommand();
-      insertCommand.CommandText = string.Format("BULK INSERT {0} FROM '{1}' WITH (FORMATFILE='{2}')", TableName, namedPipePath, FormatFile);
+      insertCommand.CommandText = string.Format("BULK INSERT [{0}] FROM '{1}' WITH (FORMATFILE='{2}')", TableName, namedPipePath, FormatFile);
       insertCommand.ExecuteNonQuery();
     }
 

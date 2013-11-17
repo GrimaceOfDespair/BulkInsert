@@ -92,7 +92,7 @@ namespace Grimace.BulkInsert.FormatFile
 
     private AnyColumnType CreateColumnDescriptor(DbColumn column)
     {
-      var columnTypeString = "SQL" + column.SqlType.ToUpperInvariant();
+      var columnTypeString = "Grimace.BulkInsert.FormatFile.SQL" + column.SqlType.ToUpperInvariant();
       var columntype = Type.GetType(columnTypeString);
       if (columntype == null)
       {
@@ -116,7 +116,7 @@ namespace Grimace.BulkInsert.FormatFile
       return new NCharTerm
                {
                  ID = column.Id,
-                 TERMINATOR = "\0",
+                 TERMINATOR = "\\0",
                  MAX_LENGTH = column.MaxLength.ToString(CultureInfo.InvariantCulture),
                };
     }

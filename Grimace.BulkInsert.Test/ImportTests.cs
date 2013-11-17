@@ -34,7 +34,7 @@ namespace Grimace.BulkInsert.Test
     [TestCase(1)]
     [TestCase(10)]
     [TestCase(int.MaxValue)]
-    public void ImportOneTextRow(int rowCount)
+    public void ImportText(int rowCount)
     {
       ClearTable(SqlConnection, "Text");
 
@@ -50,7 +50,7 @@ namespace Grimace.BulkInsert.Test
     private void ClearTable(SqlConnection sqlConnection, string tableName)
     {
       var truncCommand = sqlConnection.CreateCommand();
-      truncCommand.CommandText = string.Format("TRUNCATE {0}", tableName);
+      truncCommand.CommandText = string.Format("TRUNCATE TABLE [{0}]", tableName);
       truncCommand.ExecuteNonQuery();
     }
 
@@ -58,7 +58,7 @@ namespace Grimace.BulkInsert.Test
     [TestCase(1)]
     [TestCase(10)]
     [TestCase(int.MaxValue)]
-    public void ImportOneNumberRow(int rowCount)
+    public void ImportNumber(int rowCount)
     {
     }
   }
