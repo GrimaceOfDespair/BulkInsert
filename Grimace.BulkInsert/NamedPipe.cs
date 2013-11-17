@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using log4net;
 
 namespace Grimace.BulkInsert
 {
   public class NamedPipe : IDisposable
   {
+    public static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
     private readonly IEnumerable<string[]> _dataValueArrays;
     public string Server { get; private set; }
     public string Name { get; private set; }
@@ -31,6 +35,12 @@ namespace Grimace.BulkInsert
       Name = name;
       Server = server;
       Stream = new NamedPipeServerStream(name, PipeDirection.Out, 2, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
+
+      if (Log.IsDebugEnabled)
+      {
+        Log.DebugFormat("Listening on named pipe {0}", Path);
+      }
+
       Stream.BeginWaitForConnection(OnConnection, this);
     }
 
@@ -39,6 +49,11 @@ namespace Grimace.BulkInsert
     public void OnConnection(IAsyncResult asyncResult)
     {
       Stream.EndWaitForConnection(asyncResult);
+
+      if (Log.IsDebugEnabled)
+      {
+        Log.DebugFormat("Incoming connection on named pipe {0}", Path);
+      }
 
       foreach (var dataValues in _dataValueArrays)
       {

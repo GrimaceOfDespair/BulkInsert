@@ -5,14 +5,19 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using NUnit.Framework;
+using log4net;
 
 namespace Grimace.BulkInsert.Test
 {
   [TestFixture]
   public class ImportTests
   {
+    // Initialize log4net (necessary for the assembly attribute to kick in)
+    public static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
     public SqlConnection SqlConnection;
 
     [TestFixtureSetUp]
