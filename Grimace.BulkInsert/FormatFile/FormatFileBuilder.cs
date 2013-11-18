@@ -9,32 +9,39 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml.Serialization;
+using Grimace.BulkInsert.Extensions;
 using Grimace.BulkInsert.Resources;
 using Grimace.BulkInsert.Schema;
+using log4net;
 
 namespace Grimace.BulkInsert.FormatFile
 {
   public class FormatFileBuilder
   {
-    public SchemaProvider SchemaProvider { get; private set; }
-
-    public FormatFileBuilder(SchemaProvider schemaProvider)
+    public static string GetFormatXml(IEnumerable<DbColumn> dbColumns)
     {
-      SchemaProvider = schemaProvider;
-    }
-
-    public string GetFormatXml(IEnumerable<DbColumn> dbColumns)
-    {
-      var schema = CreateSchema(dbColumns);
+      var formatType = CreateFormatType(dbColumns);
 
       var serializer = new XmlSerializer(typeof (bcpFormatType));
-      var schemaWriter = new StringWriter();
-      serializer.Serialize(schemaWriter, schema);
+      using (var formatWriter = new StringWriter())
+      {
+        serializer.Serialize(formatWriter, formatType);
 
-      return schemaWriter.ToString();
+        return formatWriter.ToString();
+      }
     }
 
-    public bcpFormatType CreateSchema(IEnumerable<DbColumn> colums)
+    public static string CreateFormatFile(IEnumerable<DbColumn> dbColumns)
+    {
+      var formatXml = GetFormatXml(dbColumns);
+      var xmlFile = ".xml".GetTempFilePath();
+
+      File.WriteAllText(xmlFile, formatXml, Encoding.Unicode);
+
+      return xmlFile;
+    }
+
+    public static bcpFormatType CreateFormatType(IEnumerable<DbColumn> colums)
     {
       var fieldTypes = new List<AnyFieldType>();
       var columntypes = new List<AnyColumnType>();
@@ -45,6 +52,12 @@ namespace Grimace.BulkInsert.FormatFile
         columntypes.Add(CreateColumnDescriptor(column));
       }
 
+      var last = fieldTypes.Last() as CharTerm;
+      if (last != null)
+      {
+        last.TERMINATOR = "\\0\\0";
+      }
+
       return new bcpFormatType
                {
                  RECORD = fieldTypes.ToArray(),
@@ -52,9 +65,9 @@ namespace Grimace.BulkInsert.FormatFile
                };
     }
 
-    private AnyColumnType CreateColumnDescriptor(DbColumn column)
+    private static AnyColumnType CreateColumnDescriptor(DbColumn column)
     {
-      var columnTypeString = "Grimace.BulkInsert.FormatFile.SQL" + column.SqlType.ToUpperInvariant();
+      var columnTypeString = typeof(bcpFormatType).Namespace + ".SQL" + column.SqlType.ToUpperInvariant();
       var columntype = Type.GetType(columnTypeString);
       if (columntype == null)
       {
@@ -73,7 +86,7 @@ namespace Grimace.BulkInsert.FormatFile
       return columnType;
     }
 
-    private AnyFieldType CreateFieldDescriptor(DbColumn column)
+    private static AnyFieldType CreateFieldDescriptor(DbColumn column)
     {
       return new NCharTerm
                {
