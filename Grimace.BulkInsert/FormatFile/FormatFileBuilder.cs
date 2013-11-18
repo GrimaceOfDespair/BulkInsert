@@ -65,9 +65,9 @@ namespace Grimace.BulkInsert.FormatFile
                };
     }
 
-    private static AnyColumnType CreateColumnDescriptor(DbColumn column)
+    private static AnyColumnType CreateColumnDescriptor(DbColumn dbColumn)
     {
-      var columnTypeString = typeof(bcpFormatType).Namespace + ".SQL" + column.SqlType.ToUpperInvariant();
+      var columnTypeString = typeof(bcpFormatType).Namespace + ".SQL" + dbColumn.SqlType.ToUpperInvariant();
       var columntype = Type.GetType(columnTypeString);
       if (columntype == null)
       {
@@ -77,23 +77,28 @@ namespace Grimace.BulkInsert.FormatFile
       var columnType = (AnyColumnType) Activator.CreateInstance(columntype);
 
       AnyColumnTypeNULLABLE nullable;
-      Enum.TryParse(column.Nullable, out nullable);
+      Enum.TryParse(dbColumn.Nullable, out nullable);
 
-      columnType.NAME = column.Name;
+      columnType.NAME = dbColumn.Name;
       columnType.NULLABLE = nullable;
-      columnType.SOURCE = column.Id;
+      columnType.SOURCE = dbColumn.Id;
 
       return columnType;
     }
 
-    private static AnyFieldType CreateFieldDescriptor(DbColumn column)
+    private static AnyFieldType CreateFieldDescriptor(DbColumn dbColumn)
     {
-      return new NCharTerm
-               {
-                 ID = column.Id,
-                 TERMINATOR = "\\0",
-                 MAX_LENGTH = column.MaxLength.ToString(CultureInfo.InvariantCulture),
-               };
+      var fieldDescriptor = new NCharTerm
+                        {
+                          ID = dbColumn.Id, TERMINATOR = "\\0", MAX_LENGTH = dbColumn.MaxLength.ToString(CultureInfo.InvariantCulture),
+                        };
+
+      if (string.IsNullOrEmpty(dbColumn.CollationName) == false)
+      {
+        fieldDescriptor.COLLATION = dbColumn.CollationName;
+      }
+
+      return fieldDescriptor;
     }
   }
 }

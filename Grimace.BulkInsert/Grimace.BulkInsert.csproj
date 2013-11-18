@@ -46,6 +46,7 @@
     <Compile Include="Exceptions\ColumnMismatchException.cs" />
     <Compile Include="Extensions\FileExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="FormatFile\DbTypes.cs" />
     <Compile Include="FormatFile\FormatFileBuilder.cs" />
     <Compile Include="FormatFile\bulkloadschema.cs" />

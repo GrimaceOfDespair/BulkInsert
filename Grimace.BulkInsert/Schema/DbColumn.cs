@@ -7,5 +7,6 @@ namespace Grimace.BulkInsert.Schema
     public string SqlType;
     public string Nullable;
     public int MaxLength;
+    public string CollationName;
   }
 }

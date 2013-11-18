@@ -65,6 +65,13 @@ namespace Grimace.BulkInsert
       {
         WriteToStream();
       }
+      catch( Exception e)
+      {
+          if (Log.IsErrorEnabled)
+          {
+            Log.Error("Error while writing stream", e);
+          }
+      }
       finally
       {
         Stream.Close();
@@ -97,7 +104,7 @@ namespace Grimace.BulkInsert
             Log.DebugFormat("Writing row terminator");
           }
 
-          stringWriter.Write("\0\0");
+          stringWriter.Write("\0");
         }
 
         // Write the whole stream at once, because SQLServer requires so

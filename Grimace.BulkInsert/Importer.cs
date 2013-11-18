@@ -21,17 +21,18 @@ namespace Grimace.BulkInsert
 
     public DbConnection DbConnection { get; private set; }
     public string TableName { get; private set; }
-    public string[] ColumnNames { get; private set; }
     public string FormatFile { get; private set; }
     protected DbColumn[] DbColumns { get; private set; }
+
+    private readonly HashSet<string> _columnNames;
 
     public Importer(DbConnection sqlConnection, string tableName, params string[] columnNames)
     {
       DbConnection = sqlConnection;
       TableName = tableName;
-      ColumnNames = columnNames;
+      _columnNames = new HashSet<string>(columnNames);
 
-      DbColumns = new SchemaProvider(sqlConnection, columnNames)
+      DbColumns = new SchemaProvider(sqlConnection)
         .GetColumns(tableName).ToArray();
 
       FormatFile = FormatFileBuilder.CreateFormatFile(DbColumns);
@@ -61,18 +62,23 @@ namespace Grimace.BulkInsert
 
     private string[] Truncate(string[] dataValueRow)
     {
-      if (DbColumns.Length != dataValueRow.Length)
+      if (_columnNames.Count != dataValueRow.Length)
       {
-        throw new ColumnMismatchException(string.Format("{0} fields found, while importer expected {1}", dataValueRow.Length, DbColumns.Length));
+        throw new ColumnMismatchException(
+          string.Format("{0} fields found, while importer expected {1}",
+                        dataValueRow.Length, DbColumns.Length));
       }
 
-      for (var column = 0; column < DbColumns.Length; column++)
-      {
-        var maxLength = DbColumns[column].MaxLength;
-        dataValueRow[column] = dataValueRow[column].Truncate(maxLength);
-      }
+      var i = 0;
 
-      return dataValueRow;
+      return DbColumns
+        .Select(dbColumn =>
+
+                _columnNames.Contains(dbColumn.Name)
+                  ? dataValueRow[i++].Truncate(dbColumn.MaxLength)
+                  : "")
+
+        .ToArray();
     }
 
     private void ExecuteInsert(string namedPipePath)
