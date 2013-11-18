@@ -64,21 +64,24 @@ namespace Grimace.BulkInsert.Test
 
     private void ImportAndVerify(int rowCount, string tableName, params string[] columnNames)
     {
-      ClearTable(SqlConnection, tableName);
-
       var dataFile = string.Join("And", columnNames);
       Func<IEnumerable<string[]>> getDataValues = () =>
         GetDataValues(string.Format(@"App_Data\{0}.txt", dataFile), rowCount);
 
-      using (var importer = new Importer(SqlConnection, tableName, columnNames))
-      {
-        importer.Import(getDataValues());
-      }
-
-      VerifyRows(getDataValues(), tableName, columnNames);
+      ClearRows(SqlConnection, tableName);
+      ImportRows(tableName, columnNames, getDataValues());
+      VerifyRows(tableName, columnNames, getDataValues());
     }
 
-    private void VerifyRows(IEnumerable<string[]> dataValues, string tableName, string[] columnNames)
+    private void ImportRows(string tableName, string[] columnNames, IEnumerable<string[]> dataValues)
+    {
+      using (var importer = new Importer(SqlConnection, tableName, columnNames))
+      {
+        importer.Import(dataValues);
+      }
+    }
+
+    private void VerifyRows(string tableName, string[] columnNames, IEnumerable<string[]> dataValues)
     {
       var selectCommand = SqlConnection.CreateCommand();
       var columnSelectors = string.Join(", ", columnNames.Select(s => string.Format("[{0}]", s)).ToArray());
@@ -108,7 +111,7 @@ namespace Grimace.BulkInsert.Test
         .Select(line => line.Split('|'));
     }
 
-    private void ClearTable(SqlConnection sqlConnection, string tableName)
+    private void ClearRows(SqlConnection sqlConnection, string tableName)
     {
       var truncCommand = sqlConnection.CreateCommand();
       truncCommand.CommandText = string.Format("TRUNCATE TABLE [{0}]", tableName);
