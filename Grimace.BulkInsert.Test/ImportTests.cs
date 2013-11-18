@@ -94,7 +94,7 @@ namespace Grimace.BulkInsert.Test
 
           for (int column = 0; column < columnNames.Length; column++)
           {
-            Assert.AreEqual(importedData[column], dbReader[column], string.Format("Row {0} was not imported correctly", column));
+            StringAssert.Contains(dbReader[column].ToString(), importedData[column], string.Format("Row {0} was not imported correctly", column));
           }
         }
       }

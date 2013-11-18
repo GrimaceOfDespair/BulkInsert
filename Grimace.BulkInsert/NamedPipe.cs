@@ -35,7 +35,7 @@ namespace Grimace.BulkInsert
 
       Name = name;
       Server = server;
-      Stream = new NamedPipeServerStream(name, PipeDirection.InOut, 2, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
+      Stream = new NamedPipeServerStream(name, PipeDirection.Out, 2, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
 
       if (Log.IsDebugEnabled)
       {
@@ -105,6 +105,12 @@ namespace Grimace.BulkInsert
           }
 
           stringWriter.Write("\0");
+
+          //var buffer = Encoding.UTF8.GetBytes(stringWriter.ToString());
+          //Stream.Write(buffer, 0, buffer.Length);
+          //Stream.WaitForPipeDrain();
+
+          //stringWriter.GetStringBuilder().Length = 0;
         }
 
         // Write the whole stream at once, because SQLServer requires so
@@ -112,6 +118,8 @@ namespace Grimace.BulkInsert
         var buffer = Encoding.UTF8.GetBytes(stringWriter.ToString());
         Stream.Write(buffer, 0, buffer.Length);
       }
+
+      Stream.Flush();
     }
 
     public void Dispose()
