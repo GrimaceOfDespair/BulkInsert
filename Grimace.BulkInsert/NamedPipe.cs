@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using log4net;
 
@@ -19,7 +20,7 @@ namespace Grimace.BulkInsert
     public NamedPipeServerStream Stream { get; private set; }
 
     public NamedPipe(string name) :
-      this(name, ".", new[] { new[] { "If you find this in the database, something went wrong" } })
+      this(name, ".", new[] { new string[0] })
     {
     }
 
@@ -34,7 +35,7 @@ namespace Grimace.BulkInsert
 
       Name = name;
       Server = server;
-      Stream = new NamedPipeServerStream(name, PipeDirection.Out, 2, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
+      Stream = new NamedPipeServerStream(name, PipeDirection.InOut, 2, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
 
       if (Log.IsDebugEnabled)
       {
@@ -55,20 +56,73 @@ namespace Grimace.BulkInsert
         Log.DebugFormat("Incoming connection on named pipe {0}", Path);
       }
 
-      foreach (var dataValues in _dataValueArrays)
+      if (Stream.IsConnected == false)
       {
-        foreach (var dataValue in dataValues)
+        throw new NamedPipeException("Stream unexpectedly disconnected");
+      }
+
+      try
+      {
+        WriteToStream();
+      }
+      finally
+      {
+        Stream.Close();
+      }
+
+      if (Log.IsDebugEnabled)
+      {
+        Log.DebugFormat("done writing");
+      }
+    }
+
+    private void WriteToStream()
+    {
+      using (var stringWriter = new StringWriter())
+      {
+        foreach (var dataValues in _dataValueArrays)
         {
-          var dataBytes = Encoding.UTF8.GetBytes(dataValue);
-          Stream.Write(dataBytes,0, dataBytes.Length);
-          Stream.Write(new byte[] { 0 }, 0, 1);
+          foreach (var dataValue in dataValues)
+          {
+            if (Log.IsDebugEnabled)
+            {
+              Log.DebugFormat("Writing field: {0}", dataValue);
+            }
+
+            stringWriter.Write(dataValue + "\0");
+          }
+
+          if (Log.IsDebugEnabled)
+          {
+            Log.DebugFormat("Writing row terminator");
+          }
+
+          stringWriter.Write("\0\0");
         }
-        Stream.Write(new byte[] { 0 }, 0, 1);
-        Stream.Write(new byte[] { 0 }, 0, 1);
+
+        // Write the whole stream at once, because SQLServer requires so
+        // http://stackoverflow.com/questions/2197017/can-sql-server-bulk-insert-read-from-a-named-pipe-fifo
+        var buffer = Encoding.UTF8.GetBytes(stringWriter.ToString());
+        Stream.Write(buffer, 0, buffer.Length);
       }
     }
 
     public void Dispose()
+    {
+    }
+  }
+
+  public class NamedPipeException : Exception
+  {
+    public NamedPipeException(string message) : base(message)
+    {
+    }
+
+    public NamedPipeException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
+    protected NamedPipeException(SerializationInfo info, StreamingContext context) : base(info, context)
     {
     }
   }
