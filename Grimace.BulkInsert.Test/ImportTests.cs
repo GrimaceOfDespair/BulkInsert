@@ -41,15 +41,71 @@ namespace Grimace.BulkInsert.Test
     [TestCase(int.MaxValue)]
     public void ImportText(int rowCount)
     {
-      ClearTable(SqlConnection, "Text");
+      ImportAndVerify(rowCount, "Import", "Text");
+    }
 
-      using (var importer = new Importer(SqlConnection, "Text", "Text"))
+    [Test]
+    [TestCase(1)]
+    [TestCase(10)]
+    [TestCase(int.MaxValue)]
+    public void ImportNumber(int rowCount)
+    {
+      ImportAndVerify(rowCount, "Import", "Number");
+    }
+
+    [Test]
+    [TestCase(1)]
+    [TestCase(10)]
+    [TestCase(int.MaxValue)]
+    public void ImportTextAndNumber(int rowCount)
+    {
+      ImportAndVerify(rowCount, "Import", "Text", "Number");
+    }
+
+    private void ImportAndVerify(int rowCount, string tableName, params string[] columnNames)
+    {
+      ClearTable(SqlConnection, tableName);
+
+      var dataFile = string.Join("And", columnNames);
+      Func<IEnumerable<string[]>> getDataValues = () =>
+        GetDataValues(string.Format(@"App_Data\{0}.txt", dataFile), rowCount);
+
+      using (var importer = new Importer(SqlConnection, tableName, columnNames))
       {
-        importer.Import(File
-                          .ReadLines(@"App_Data\Text.txt")
-                          .Take(rowCount)
-                          .Select(line => new[] {line}));
+        importer.Import(getDataValues());
       }
+
+      VerifyRows(getDataValues(), tableName, columnNames);
+    }
+
+    private void VerifyRows(IEnumerable<string[]> dataValues, string tableName, string[] columnNames)
+    {
+      var selectCommand = SqlConnection.CreateCommand();
+      var columnSelectors = string.Join(", ", columnNames.Select(s => string.Format("[{0}]", s)).ToArray());
+      selectCommand.CommandText = string.Format("SELECT {0} FROM [{1}]", columnSelectors, tableName);
+
+      var importedDataEnumerator = dataValues.GetEnumerator();
+      using (var dbReader = selectCommand.ExecuteReader())
+      {
+        while (dbReader.HasRows && dbReader.Read())
+        {
+          importedDataEnumerator.MoveNext();
+          var importedData = importedDataEnumerator.Current;
+
+          for (int column = 0; column < columnNames.Length; column++)
+          {
+            Assert.AreEqual(importedData[column], dbReader[column], string.Format("Row {0} was not imported correctly", column));
+          }
+        }
+      }
+    }
+
+    private static IEnumerable<string[]> GetDataValues(string path, int rowCount)
+    {
+      return File
+        .ReadLines(path)
+        .Take(rowCount)
+        .Select(line => line.Split('|'));
     }
 
     private void ClearTable(SqlConnection sqlConnection, string tableName)
@@ -59,12 +115,5 @@ namespace Grimace.BulkInsert.Test
       truncCommand.ExecuteNonQuery();
     }
 
-    [Test]
-    [TestCase(1)]
-    [TestCase(10)]
-    [TestCase(int.MaxValue)]
-    public void ImportNumber(int rowCount)
-    {
-    }
   }
 }
