@@ -67,7 +67,19 @@ namespace Grimace.BulkInsert.FormatFile
 
     private static AnyColumnType CreateColumnDescriptor(DbColumn dbColumn)
     {
-      var columnTypeString = typeof(bcpFormatType).Namespace + ".SQL" + dbColumn.SqlType.ToUpperInvariant();
+      var sqlType = dbColumn.SqlType.ToUpperInvariant();
+      switch (sqlType)
+      {
+        case "VARCHAR":
+          sqlType = "VARYCHAR";
+          break;
+        case "VARBIN":
+          sqlType = "VARYBIN";
+          break;
+      }
+
+      var columnTypeString = typeof(bcpFormatType).Namespace + ".SQL" + sqlType;
+
       var columntype = Type.GetType(columnTypeString);
       if (columntype == null)
       {
@@ -88,9 +100,11 @@ namespace Grimace.BulkInsert.FormatFile
 
     private static AnyFieldType CreateFieldDescriptor(DbColumn dbColumn)
     {
-      var fieldDescriptor = new NCharTerm
+      var fieldDescriptor = new CharTerm
                         {
-                          ID = dbColumn.Id, TERMINATOR = "\\0", MAX_LENGTH = dbColumn.MaxLength.ToString(CultureInfo.InvariantCulture),
+                          ID = dbColumn.Id,
+                          TERMINATOR = "\\0",
+                          MAX_LENGTH = dbColumn.MaxLength.ToString(CultureInfo.InvariantCulture),
                         };
 
       if (string.IsNullOrEmpty(dbColumn.CollationName) == false)
