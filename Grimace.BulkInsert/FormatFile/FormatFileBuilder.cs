@@ -41,7 +41,7 @@ namespace Grimace.BulkInsert.FormatFile
       return xmlFile;
     }
 
-    public static bcpFormatType CreateFormatType(IEnumerable<DbColumn> colums)
+    public static bcpFormatType CreateFormatType(IEnumerable<DbColumn> colums, bool outputNullability = false)
     {
       var fieldTypes = new List<AnyFieldType>();
       var columntypes = new List<AnyColumnType>();
@@ -49,7 +49,7 @@ namespace Grimace.BulkInsert.FormatFile
       foreach (var column in colums)
       {
         fieldTypes.Add(CreateFieldDescriptor(column));
-        columntypes.Add(CreateColumnDescriptor(column));
+        columntypes.Add(CreateColumnDescriptor(column, outputNullability));
       }
 
       var last = fieldTypes.Last() as CharTerm;
@@ -65,7 +65,7 @@ namespace Grimace.BulkInsert.FormatFile
                };
     }
 
-    private static AnyColumnType CreateColumnDescriptor(DbColumn dbColumn)
+    private static AnyColumnType CreateColumnDescriptor(DbColumn dbColumn, bool outputNullability)
     {
       var sqlType = dbColumn.SqlType.ToUpperInvariant();
       switch (sqlType)
@@ -88,12 +88,15 @@ namespace Grimace.BulkInsert.FormatFile
 
       var columnType = (AnyColumnType) Activator.CreateInstance(columntype);
 
-      AnyColumnTypeNULLABLE nullable;
-      Enum.TryParse(dbColumn.Nullable, out nullable);
-
       columnType.NAME = dbColumn.Name;
-      columnType.NULLABLE = nullable;
       columnType.SOURCE = dbColumn.Id;
+
+      if (outputNullability)
+      {
+        AnyColumnTypeNULLABLE nullable;
+        Enum.TryParse(dbColumn.Nullable, out nullable);
+        columnType.NULLABLE = nullable;
+      }
 
       return columnType;
     }
