@@ -20,15 +20,7 @@ namespace Grimace.BulkInsert.FormatFile
   {
     public static string GetFormatXml(IEnumerable<DbColumn> dbColumns)
     {
-      var formatType = CreateFormatType(dbColumns);
-
-      var serializer = new XmlSerializer(typeof (bcpFormatType));
-      using (var formatWriter = new StringWriter())
-      {
-        serializer.Serialize(formatWriter, formatType);
-
-        return formatWriter.ToString();
-      }
+      return CreateFormatType(dbColumns).SerializeToXml();
     }
 
     public static string CreateFormatFile(IEnumerable<DbColumn> dbColumns)

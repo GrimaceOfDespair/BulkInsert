@@ -10,9 +10,14 @@ namespace Grimace.BulkInsert.Extensions
   {
     public static string CreateLink(this string path)
     {
-      var link = "file://" + path.Replace('\\', '/');
+      return "file://" + path.Replace('\\', '/');
+    }
 
-      return link;
+    public static string CreateLinkFromContent(this string content, string extension)
+    {
+      var tempPath = GetTempFilePath(extension);
+      File.WriteAllText(tempPath, content, Encoding.Unicode);
+      return tempPath.CreateLink();
     }
 
     public static string GetTempFilePath(this string extension)
