@@ -19,12 +19,15 @@ namespace Grimace.BulkInsert.Test
     public static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
     [Test]
-    [TestCase(1)]
-    [TestCase(10)]
-    [TestCase(int.MaxValue)]
-    public void ImportText(int rowCount)
+    [TestCase(1, "VarChar")]
+    [TestCase(10, "VarChar")]
+    [TestCase(int.MaxValue, "VarChar")]
+    [TestCase(1, "NVarChar")]
+    [TestCase(10, "NVarChar")]
+    [TestCase(int.MaxValue, "NVarChar")]
+    public void ImportVarChar(int rowCount, string field)
     {
-      ImportAndVerify(rowCount, "Import", "Text");
+      ImportAndVerify(rowCount, "Import", field);
     }
 
     [Test]
