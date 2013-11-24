@@ -33,12 +33,18 @@ namespace Grimace.BulkInsert.Schema
 
           while (columnReader.Read())
           {
+            var charWidth = 1;
+
             var sqlType = (string)columnReader["data_type"] ?? "";
 
             var maxLength = (columnReader["character_maximum_length"] as int?) ?? 0;
             if (maxLength == 0)
             {
               maxLength = DbTypes.GetMaxLength(sqlType);
+            }
+            else
+            {
+              charWidth = DbTypes.GetCharWidth(sqlType);
             }
 
             var dbColumn = new DbColumn
@@ -47,7 +53,7 @@ namespace Grimace.BulkInsert.Schema
                                Name = columnReader["column_name"].DbToClr(""),
                                SqlType = sqlType,
                                Nullable = columnReader["is_nullable"].DbToClr(""),
-                               MaxLength = maxLength,
+                               MaxLength = maxLength * charWidth,
                                CollationName = columnReader["collation_name"].DbToClr(""),
                              };
 

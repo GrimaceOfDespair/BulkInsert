@@ -220,5 +220,17 @@ namespace Grimace.BulkInsert.FormatFile
           return int.MaxValue;
       }
     }
+
+    public static int GetCharWidth(string columnType)
+    {
+      switch (columnType)
+      {
+        default:
+          return 1;
+        case "nvarchar":
+        case "nchar":
+          return 2;
+      }
+    }
   }
 }
