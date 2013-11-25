@@ -63,6 +63,7 @@
     <Compile Include="FormatFileTests.cs" />
     <Compile Include="ImportTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TypeTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -79,8 +80,8 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="App_Data\SampleData_log.ldf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <DependentUpon>SampleData.mdf</DependentUpon>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="App_Data\Text.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

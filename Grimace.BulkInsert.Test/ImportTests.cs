@@ -59,36 +59,6 @@ namespace Grimace.BulkInsert.Test
       VerifyRows(tableName, columnNames, getDataValues());
     }
 
-    private void ImportRows(string tableName, string[] columnNames, IEnumerable<string[]> dataValues)
-    {
-      using (var importer = new Importer(SqlConnection, tableName, columnNames))
-      {
-        importer.Import(dataValues);
-      }
-    }
-
-    private void VerifyRows(string tableName, string[] columnNames, IEnumerable<string[]> dataValues)
-    {
-      var selectCommand = SqlConnection.CreateCommand();
-      var columnSelectors = string.Join(", ", columnNames.Select(s => string.Format("[{0}]", s)).ToArray());
-      selectCommand.CommandText = string.Format("SELECT {0} FROM [{1}]", columnSelectors, tableName);
-
-      var importedDataEnumerator = dataValues.GetEnumerator();
-      using (var dbReader = selectCommand.ExecuteReader())
-      {
-        while (dbReader.HasRows && dbReader.Read())
-        {
-          importedDataEnumerator.MoveNext();
-          var importedData = importedDataEnumerator.Current;
-
-          for (int column = 0; column < columnNames.Length; column++)
-          {
-            StringAssert.Contains(dbReader[column].ToString(), importedData[column], string.Format("Row {0} was not imported correctly", column));
-          }
-        }
-      }
-    }
-
     private static IEnumerable<string[]> GetDataValues(string path, int rowCount)
     {
       return File

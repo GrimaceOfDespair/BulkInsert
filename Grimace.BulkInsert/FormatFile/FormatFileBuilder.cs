@@ -68,6 +68,9 @@ namespace Grimace.BulkInsert.FormatFile
         case "VARBIN":
           sqlType = "VARYBIN";
           break;
+        case "SMALLDATETIME":
+          sqlType = "DATETIM4";
+          break;
       }
 
       var columnTypeString = typeof(bcpFormatType).Namespace + ".SQL" + sqlType;
