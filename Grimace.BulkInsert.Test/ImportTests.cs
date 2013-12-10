@@ -19,24 +19,21 @@ namespace Grimace.BulkInsert.Test
     public static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
     [Test]
-    [TestCase(1, "VarChar")]
-    [TestCase(10, "VarChar")]
-    [TestCase(int.MaxValue, "VarChar")]
-    [TestCase(1, "NVarChar")]
-    [TestCase(10, "NVarChar")]
-    [TestCase(int.MaxValue, "NVarChar")]
-    public void ImportVarChar(int rowCount, string field)
+    [TestCase(1)]
+    [TestCase(10)]
+    [TestCase(int.MaxValue)]
+    public void ImportVarChar(int rowCount)
     {
-      ImportAndVerify(rowCount, "Import", field);
+      ImportAndVerify(rowCount, "Text", "NVarChar(4000)");
     }
 
     [Test]
     [TestCase(1)]
     [TestCase(10)]
     [TestCase(int.MaxValue)]
-    public void ImportNumber(int rowCount)
+    public void ImportInt(int rowCount)
     {
-      ImportAndVerify(rowCount, "Import", "Number");
+      ImportAndVerify(rowCount, "Number", "Int");
     }
 
     [Test]
@@ -45,16 +42,17 @@ namespace Grimace.BulkInsert.Test
     [TestCase(int.MaxValue)]
     public void ImportTextAndNumber(int rowCount)
     {
-      ImportAndVerify(rowCount, "Import", "Text", "Number");
+      ImportAndVerify(rowCount, "TextAndNumber", "Text", "Int");
     }
 
-    private void ImportAndVerify(int rowCount, string tableName, params string[] columnNames)
+    private void ImportAndVerify(int rowCount, string testName, params string[] columnNames)
     {
-      var dataFile = string.Join("And", columnNames);
-      Func<IEnumerable<string[]>> getDataValues = () =>
-        GetDataValues(string.Format(@"App_Data\{0}.txt", dataFile), rowCount);
+      var tableName = "Import_" + testName;
 
-      ClearRows(SqlConnection, tableName);
+      Func<IEnumerable<string[]>> getDataValues = () =>
+        GetDataValues(string.Format(@"App_Data\{0}.txt", testName), rowCount);
+
+      CreateTable(tableName, columnNames);
       ImportRows(tableName, columnNames, getDataValues());
       VerifyRows(tableName, columnNames, getDataValues());
     }
