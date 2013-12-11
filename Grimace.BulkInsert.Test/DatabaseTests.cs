@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 
 namespace Grimace.BulkInsert.Test
@@ -13,6 +14,8 @@ namespace Grimace.BulkInsert.Test
   public class DatabaseTests
   {
     public SqlConnection SqlConnection;
+
+    public Regex FixedCharType = new Regex(@"(?<!var)char\((?<size>\d+)\)", RegexOptions.IgnoreCase);
 
     public string[] ColumnTypes = new[]
                                     {
@@ -123,8 +126,20 @@ namespace Grimace.BulkInsert.Test
 
           for (int column = 0; column < columnNames.Length; column++)
           {
-            var value = string.Format(CultureInfo.InvariantCulture, toString, dbReader[column]);
-            StringAssert.Contains(value, importedData[column], string.Format("Row {0} was not imported correctly", column));
+            var rawDbValue = dbReader[column];
+            var dbValue = string.Format(CultureInfo.InvariantCulture, toString, rawDbValue);
+            var columnName = columnNames[column];
+
+            // Apply padding on char(xxx) and nchar(xxx)
+            var value = importedData[column];
+            var match = FixedCharType.Match(columnName);
+            if (match.Success)
+            {
+              var size = int.Parse(match.Groups["size"].Value);
+              value = value.PadRight(size);
+            }
+
+            StringAssert.Contains(value, dbValue, string.Format("Row {0} was not imported correctly", column));
           }
         }
       }
