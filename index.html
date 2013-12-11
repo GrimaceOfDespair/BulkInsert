@@ -1,0 +1,90 @@
+<!doctype html>
+<!-- The Time Machine GitHub pages theme was designed and developed by Jon Rohan, on Feb 7, 2012. -->
+<!-- Follow him for fun. http://twitter.com/jonrohan. Tail his code on http://github.com/jonrohan -->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen"/>
+  <link rel="stylesheet" href="stylesheets/pygment_trac.css"/>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script type="text/javascript" src="javascripts/script.js"></script>
+
+  <title>Bulkinsert</title>
+  <meta name="description" content="Use SQLServer Bulk Insert to import bulk data from .NET without files">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <header>
+      <h1 class="title">Bulkinsert</h1>
+    </header>
+    <div id="container">
+      <p class="tagline">Use SQLServer Bulk Insert to import bulk data from .NET without files</p>
+      <div id="main" role="main">
+        <div class="download-bar">
+        <div class="inner">
+          <a href="https://github.com/GrimaceOfDespair/BulkInsert/tarball/master" class="download-button tar"><span>Download</span></a>
+          <a href="https://github.com/GrimaceOfDespair/BulkInsert/zipball/master" class="download-button zip"><span>Download</span></a>
+          <a href="https://github.com/GrimaceOfDespair/BulkInsert" class="code">View Bulkinsert on GitHub</a>
+        </div>
+        <span class="blc"></span><span class="trc"></span>
+        </div>
+        <article class="markdown-body">
+          <h1>
+<a name="bulkinsert" class="anchor" href="#bulkinsert"><span class="octicon octicon-link"></span></a>BulkInsert</h1>
+
+<p>Use SQLServer Bulk Insert to import bulk data from .NET without files</p>
+
+<p>Regular bulk import scenario's involve running bcp to analyze the database,
+then supply the resulting schema data to either bcp or BULK INSERT and last
+but not least provide the data in some text format.</p>
+
+<p>Luckily SQLServer BULK INSERT can also handle pipe streams instead of files.
+By hooking up a named pipe and throwing data at it without even touching disk
+(except for the format file), it's possible to create an equivalent for
+regular INSERTs which tend to be slower if used in bulk.</p>
+
+<p>Example usage:</p>
+
+<pre><code>  // Get your data from anywhere, not necessarilly from a file
+  var values = new[]
+                {
+                  new[] {"value1", "value2"}, // Row 1
+                  new[] {"value3", "value4"}  // Row 2
+                };
+
+  // Bulk import data into MyTable in Column1 and Column2
+  using (var importer = new Importer(SqlConnection, "MyTable", "Column1", "Column2"))
+  {
+    importer.Import(values);
+  }
+</code></pre>
+        </article>
+      </div>
+    </div>
+    <footer>
+      <div class="owner">
+      <p><a href="https://github.com/GrimaceOfDespair" class="avatar"><img src="https://0.gravatar.com/avatar/62fed4e2892486943d2fc579b43df366?d=https%3A%2F%2Fidenticons.github.com%2Fdbcb443c7eba31476522ac474594aba3.png&amp;r=x&amp;s=60" width="48" height="48"/></a> <a href="https://github.com/GrimaceOfDespair">GrimaceOfDespair</a> maintains <a href="https://github.com/GrimaceOfDespair/BulkInsert">Bulkinsert</a></p>
+
+
+      </div>
+      <div class="creds">
+        <small>This page generated using <a href="http://pages.github.com/">GitHub Pages</a><br/>theme by <a href="https://twitter.com/jonrohan/">Jon Rohan</a></small>
+      </div>
+    </footer>
+  </div>
+  <div class="current-section">
+    <a href="#top">Scroll to top</a>
+    <a href="https://github.com/GrimaceOfDespair/BulkInsert/tarball/master" class="tar">tar</a><a href="https://github.com/GrimaceOfDespair/BulkInsert/zipball/master" class="zip">zip</a><a href="" class="code">source code</a>
+    <p class="name"></p>
+  </div>
+
+  
+</body>
+</html>
