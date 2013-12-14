@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>http://www.gnu.org/licenses/gpl.html</licenseUrl>
+    <projectUrl>http://grimaceofdespair.github.io/BulkInsert/</projectUrl>
+    <iconUrl>http://grimaceofdespair.github.io/BulkInsert/images/icon.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>First release</releaseNotes>
+    <copyright>Copyright 2013</copyright>
+    <tags>SQLServer Bulk Insert</tags>
+    <dependencies>
+      <dependency id="log4net" version="[1.2.10,3.0)" />
+    </dependencies> 
+  </metadata>
+</package>
