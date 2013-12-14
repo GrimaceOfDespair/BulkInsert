@@ -1,0 +1,3 @@
+[submodule "myget"]
+	path = myget
+	url = https://github.com/myget/BuildTools.git
