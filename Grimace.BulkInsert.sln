@@ -1,15 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grimace.BulkInsert", "Grimace.BulkInsert.csproj", "{C20CD486-BF9F-46F2-AC27-3103F18E72C2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grimace.BulkInsert", "Grimace.BulkInsert\Grimace.BulkInsert.csproj", "{C20CD486-BF9F-46F2-AC27-3103F18E72C2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Resources", "Resources", "{D937CD13-DF41-4F34-9034-F1E985F8A90A}"
 	ProjectSection(SolutionItems) = preProject
-		..\Resources\bulkloadschema.bat = ..\Resources\bulkloadschema.bat
-		..\Resources\bulkloadschema.xsd = ..\Resources\bulkloadschema.xsd
+		Resources\bulkloadschema.bat = Resources\bulkloadschema.bat
+		Resources\bulkloadschema.xsd = Resources\bulkloadschema.xsd
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grimace.BulkInsert.Test", "..\Grimace.BulkInsert.Test\Grimace.BulkInsert.Test.csproj", "{2D2E2E7A-26F9-4DC9-BB24-41DF74BB89CF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grimace.BulkInsert.Test", "Grimace.BulkInsert.Test\Grimace.BulkInsert.Test.csproj", "{2D2E2E7A-26F9-4DC9-BB24-41DF74BB89CF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
