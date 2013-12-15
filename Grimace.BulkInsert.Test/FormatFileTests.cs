@@ -40,6 +40,7 @@ namespace Grimace.BulkInsert.Test
     public static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
     [Test]
+    [Explicit("Won't run on CI")]
     public void GeneratedFileMatchesBcpOutput()
     {
       var customFormat = GenerateFormatFileWithFormatFileBuilder();
