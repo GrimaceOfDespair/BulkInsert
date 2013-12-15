@@ -56,7 +56,7 @@ namespace Grimace.BulkInsert.Test
     [Test]
     public void ImportTime(string columntype, string value)
     {
-      VerifyRows(columntype, value, "HH:mm:ss.nnn");
+      VerifyRows(columntype, value, @"hh\:mm\:ss\.fffffff");
     }
 
     [TestCase("Date", "0001-01-01")]
