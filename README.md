@@ -1,5 +1,4 @@
 <img src="https://www.myget.org/Content/images/badges/successful.svg">
-
 BulkInsert
 ==========
 
